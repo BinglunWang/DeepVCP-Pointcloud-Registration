@@ -1,6 +1,6 @@
 import torch 
 from torch import nn
-from knn_cuda import KNN
+from sklearn.neighbors import KDTree
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -67,14 +67,15 @@ def svd_optimization(x, y_pred, R_true, t_true):
     y_pred1 = torch.matmul(R1, x) + t1       # Bx3xN
 
     # get 1-nearest neighbor, outlier rejection
-    knn = KNN(k=1, transpose_mode=False)
     
-    dist, _ = knn(y_pred1, y_true)          # BxKxN
-    dist = dist.to(device)
+    tree = KDTree(y_true.detach().cpu().numpy().reshape(-1,3))
+    distance, _ = tree.query(y_pred1.detach().cpu().numpy().reshape(-1,3), 1)
+
+    distance = torch.from_numpy(distance).to(device).reshape(1,1,-1)
 
     # eliminate 20% outliers (keep 80% points with smallest 1-NN distance)
     num_inliers = int(N*0.8)
-    inliers = torch.topk(dist, k=num_inliers, dim=-1,\
+    inliers = torch.topk(distance, k=num_inliers, dim=-1,\
                      largest=False, sorted=True).indices
     inliers = inliers.repeat(1,3,1).to(device)
 

@@ -19,7 +19,7 @@ from deepVCP_loss import deepVCP_loss
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-
+  
 # setup args
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dataset', default="modelnet", help='dataset (specify modelnet or kitti)')
@@ -48,15 +48,11 @@ def main():
     print(f"device: {device}")
 
     # dataset 
-    if dataset == "modelnet":
-        root = '/home/zheruiz/datasets/modelnet40_normal_resampled/'
-        shape_names = np.loadtxt(root+"modelnet10_shape_names.txt", dtype="str")
-        train_data= ModelNet40Dataset(root=root, augment=True, full_dataset=full_dataset, split='train')
-        test_data = ModelNet40Dataset(root=root, augment=True, full_dataset=full_dataset,  split='test')
-    elif dataset == "kitti":
-        root = '/data/dataset/'
-        train_data= KITTIDataset(root=root, N=10000, augment=True, split="train")
-        test_data = KITTIDataset(root=root, N=10000, augment=True, split="test")
+
+    root = 'modelnet40_normal_resampled/'
+    shape_names = np.loadtxt(root+"modelnet10_shape_names.txt", dtype="str")
+    train_data= ModelNet40Dataset(root=root, augment=True, full_dataset=full_dataset, split='train')
+    test_data = ModelNet40Dataset(root=root, augment=True, full_dataset=full_dataset,  split='test')
 
 
     train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=False)

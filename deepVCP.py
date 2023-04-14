@@ -20,6 +20,7 @@ class DeepVCP(nn.Module):
         self.WL = weighting_layer()
         self.DFE = feat_embedding_layer()
         self.cpg = cpg()
+        self.use_normal = use_normal
     
     def forward(self, src_pts, tgt_pts, R_init, t_init):
         B, _, _ = src_pts.shape
@@ -41,7 +42,8 @@ class DeepVCP(nn.Module):
         batch_mask = batch_mask.flatten()
 
         # indexing the src_pts to get keypts: B x K_topk x 6
-        src_keypts_idx_unsqueezed = (src_keypts_idx.unsqueeze(0)).unsqueeze(1).repeat(1, 6, 1)
+        unsquueze_ch = 6 if self.use_normal else 3
+        src_keypts_idx_unsqueezed = (src_keypts_idx.unsqueeze(0)).unsqueeze(1).repeat(1, unsquueze_ch, 1)
         print("src_keypts_idx_unsqueezed: ", src_keypts_idx_unsqueezed.shape)
         src_keypts = torch.gather(src_pts, 2, src_keypts_idx_unsqueezed).view(B, K_topk, src_pts.shape[1])
         print("src_keypts: ", src_keypts.shape)

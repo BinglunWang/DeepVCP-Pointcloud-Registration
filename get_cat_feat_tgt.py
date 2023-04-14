@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+from sklearn.neighbors import KDTree
 
-from knn_cuda import KNN
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 '''
 Get concatenated local coordinates and normalized features for candidate points
@@ -42,14 +44,17 @@ class Get_Cat_Feat_Tgt(nn.Module):
         # idx: (B x (K_topk x C) x k_nn)
         # candidate_pts_k: (B x K_topk x C x nsample x 3)
         k_nn = 32
-        knn = KNN(k = k_nn, transpose_mode = True)
+        
         query_pts = candidate_pts_flat
         print("tgt_pts_xyz: ", tgt_pts_xyz.shape)
         # previous
         # ref_pts = tgt_pts_xyz.repeat(B, 1, 1)
         ref_pts = tgt_pts_xyz
         print("ref_pts: ", ref_pts.shape)
-        dist, idx = knn(ref_pts.cuda(), query_pts.cuda())
+        tree = KDTree(ref_pts.detach().cpu().numpy().reshape(-1,3))
+        dist, idx = tree.query(query_pts.detach().cpu().numpy().reshape(-1,3), k=32)
+        dist = torch.from_numpy(dist).to(device).reshape(1,32,-1)
+        idx = torch.from_numpy(idx).to(device).reshape(1,32,-1)
         candidate_pts_k = candidate_pts.unsqueeze(3).repeat(1, 1, 1, nsample, 1)
 
         # normalize the deep features based on distance
