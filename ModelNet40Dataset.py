@@ -20,30 +20,25 @@ class ModelNet40Dataset(Dataset):
         self.labels = []
         self.catfile = os.path.join(self.root, 'modelnet10_shape_names.txt')
 
-        self.cat = [line.rstrip() for line in open(self.catfile)]
+        self.cat = ['cup', 'lamp', 'radio']
+        
+        for cat in self.cat:
+            files = sorted(os.listdir(os.path.join(self.root, cat)))
+            file_len = len(files)
+            split_idx = int(file_len*0.8)
+            start_idx = 0 if split == 'train' else split_idx
+            stop_idx = split_idx if split == 'train' else file_len
+            for file in files[start_idx:stop_idx]:
+                file_path = os.path.join(self.root, cat, file)
+                data = np.loadtxt(file_path, delimiter=',', dtype=np.float64)
 
-        # training file names 
-        if full_dataset == True:
-            names = np.loadtxt(os.path.join(self.root, \
-                f'modelnet10_{split}.txt'), dtype=np.str)
-        else:
-            names = np.loadtxt(os.path.join(self.root, \
-                f'modelnet10_small_{split}.txt'), dtype=np.str)
+                points = data[:, :3]    # xyz
+                normals = data[:, 3:]   # normals from origin
 
-        # iterate through training files 
-        for i, file in enumerate(names[:2]):
-            # read point clouds
-            category, num = file.split('_0')
-            txt_file= os.path.join(self.root, category, file) + '.txt'
-            data = np.loadtxt(txt_file, delimiter=',', dtype=np.float64)
-
-            points = data[:, :3]    # xyz
-            normals = data[:, 3:]   # normals from origin
-
-            # Add to list
-            self.points.append(points)
-            self.normals.append(normals)
-            self.labels.append(file)
+                # Add to list
+                self.points.append(points)
+                self.normals.append(normals)
+                self.labels.append(file)
 
         print("# Total clouds", len(self.points))
 
