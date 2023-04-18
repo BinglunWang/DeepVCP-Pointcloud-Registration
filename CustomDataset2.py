@@ -19,7 +19,7 @@ def downsample(src, N):
     return src[src_downsample_indices, :]
 
 
-class CustomDataset(Dataset):
+class CustomDataset2(Dataset):
     def __init__(self, root, augment=True, rotate=True, split="train",
                  N=10000):
         self.root = root
@@ -28,22 +28,22 @@ class CustomDataset(Dataset):
         self.N = N
         self.files = []
         self.points = []
-        self.augnum = 2000
+        self.augnum = 5
         self.diag_len_bounding_boxes = []
         # path to pointclouds + poses
-        path = f"{self.root}meshes/"
+        path = f"{self.root}"
         for file in os.listdir(path):
-            if not file.endswith('.obj'):
+            if not file.endswith('.ply'):
                 continue
             print(f"Processing {file}")
             src_pts = trimesh.load(os.path.join(path, file))
             self.files.append(file)
             self.points.append(src_pts)
-            
+            print(src_pts.vertices.shape)
             # Calculate diagonal length of bounding box
-            x_len = np.amax(src_pts[:,0]) - np.amin(src_pts[:,0])
-            y_len = np.amax(src_pts[:,1]) - np.amin(src_pts[:,1])
-            z_len = np.amax(src_pts[:,2]) - np.amin(src_pts[:,2])
+            x_len = np.amax(src_pts.vertices[:,0]) - np.amin(src_pts.vertices[:,0])
+            y_len = np.amax(src_pts.vertices[:,1]) - np.amin(src_pts.vertices[:,1])
+            z_len = np.amax(src_pts.vertices[:,2]) - np.amin(src_pts.vertices[:,2])
             diag_len_bounding_box = np.sqrt(x_len * x_len + y_len * y_len + z_len * z_len)
             self.diag_len_bounding_boxes.append(diag_len_bounding_box)
 
@@ -55,21 +55,21 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         # source pointcloud
-        src_points = self.points[index // self.augnum].sample(self.N).T
+        
+        points_ind = index // self.augnum
+        src_points = self.points[points_ind].sample(self.N).T
         # 3 x N
         # print("Loading file: ", self.files[index])
 
         # data augmentation
         # generate random angles for rotation matrices
-        theta_x = np.random.uniform(0, np.pi * 2)
-        theta_y = np.random.uniform(0, np.pi * 2)
-        theta_z = np.random.uniform(0, np.pi * 2)
-
+        theta_x = np.random.uniform(0, np.pi/5)
+        theta_y = np.random.uniform(0, np.pi/5)
+        theta_z = np.random.uniform(0, np.pi/5)
         
-
         # generate random translation
-        translation_max = diag_len_bounding_box[] * 5
-        translation_min = -diag_len_bounding_box[] * 5
+        translation_max = self.diag_len_bounding_boxes[points_ind] * 0.3
+        translation_min = self.diag_len_bounding_boxes[points_ind]  * 0.3
         t = np.random.uniform(translation_min, translation_max, (3, 1))
 
         # Generate target point cloud by doing a series of random
