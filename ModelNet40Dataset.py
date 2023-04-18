@@ -31,7 +31,7 @@ class ModelNet40Dataset(Dataset):
                 f'modelnet10_small_{split}.txt'), dtype=np.str)
 
         # iterate through training files 
-        for i, file in enumerate(names):
+        for i, file in enumerate(names[:2]):
             # read point clouds
             category, num = file.split('_0')
             txt_file= os.path.join(self.root, category, file) + '.txt'
