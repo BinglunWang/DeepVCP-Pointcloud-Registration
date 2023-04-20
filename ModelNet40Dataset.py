@@ -58,9 +58,9 @@ class ModelNet40Dataset(Dataset):
             theta_y = np.random.uniform(0, np.pi*2)
             theta_z = np.random.uniform(0, np.pi*2)
 
-            prior_x = theta_x + np.random.uniform(-np.pi/4, np.pi/4)
-            prior_y = theta_y + np.random.uniform(-np.pi/4, np.pi/4)
-            prior_z = theta_z + np.random.uniform(-np.pi/4, np.pi/4)
+            prior_x = theta_x + np.random.uniform(-np.pi/8, np.pi/8)
+            prior_y = theta_y + np.random.uniform(-np.pi/8, np.pi/8)
+            prior_z = theta_z + np.random.uniform(-np.pi/8, np.pi/8)
 
             # generate random translation
             translation_max = 1.0
