@@ -89,6 +89,7 @@ class ModelNet40Dataset(Dataset):
         target_normal = torch.from_numpy(target_normal)
 
         R = torch.from_numpy(R)
+        R_prior = torch.from_numpy(R_prior)
         
         src_points = torch.cat((src_points, src_normals), dim = 0)
         target_points = torch.cat((target_points, target_normal), dim = 0)
