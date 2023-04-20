@@ -20,7 +20,7 @@ class ModelNet40Dataset(Dataset):
         self.labels = []
         self.catfile = os.path.join(self.root, 'modelnet10_shape_names.txt')
 
-        self.cat = ['cup', 'lamp', 'radio']
+        self.cat = ['cup', 'lamp']
         
         for cat in self.cat:
             files = sorted(os.listdir(os.path.join(self.root, cat)))
@@ -58,6 +58,10 @@ class ModelNet40Dataset(Dataset):
             theta_y = np.random.uniform(0, np.pi*2)
             theta_z = np.random.uniform(0, np.pi*2)
 
+            prior_x = theta_x + np.random.uniform(-np.pi/4, np.pi/4)
+            prior_y = theta_y + np.random.uniform(-np.pi/4, np.pi/4)
+            prior_z = theta_z + np.random.uniform(-np.pi/4, np.pi/4)
+
             # generate random translation
             translation_max = 1.0
             translation_min = -1.0
@@ -69,6 +73,11 @@ class ModelNet40Dataset(Dataset):
             Ry = RotY(theta_y)
             Rz = RotZ(theta_z)
             R = Rx @ Ry @ Rz
+
+            R_prior_x = RotX(prior_x)
+            R_prior_y = RotY(prior_y)
+            R_prior_z = RotZ(prior_z)
+            R_prior = R_prior_x @ R_prior_y @ R_prior_z
 
             # rotate source point cloud and normals
             target_points = R @ src_points
@@ -84,7 +93,7 @@ class ModelNet40Dataset(Dataset):
         src_points = torch.cat((src_points, src_normals), dim = 0)
         target_points = torch.cat((target_points, target_normal), dim = 0)
         # return source point cloud and transformed (target) point cloud 
-        return (src_points, target_points, R, t)
+        return (src_points, target_points, R, t, R_prior)
 
         
 if __name__ == "__main__":
