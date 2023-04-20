@@ -74,6 +74,7 @@ class CustomDataset2(Dataset):
 
         # Generate target point cloud by doing a series of random
         # rotations on source point cloud
+        
         Rx = RotX(theta_x)
         Ry = RotY(theta_y)
         Rz = RotZ(theta_z)
