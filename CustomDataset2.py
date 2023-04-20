@@ -63,9 +63,9 @@ class CustomDataset2(Dataset):
 
         # data augmentation
         # generate random angles for rotation matrices
-        theta_x = np.random.uniform(0, np.pi/5)
-        theta_y = np.random.uniform(0, np.pi/5)
-        theta_z = np.random.uniform(0, np.pi/5)
+        theta_x = np.random.uniform(0, np.pi)
+        theta_y = np.random.uniform(0, np.pi)
+        theta_z = np.random.uniform(0, np.pi)
         
         # generate random translation
         translation_max = self.diag_len_bounding_boxes[points_ind] * 0.3
@@ -79,19 +79,37 @@ class CustomDataset2(Dataset):
         Rz = RotZ(theta_z)
         R = Rx @ Ry @ Rz
 
+        prior_x = theta_x + np.random.uniform(-np.pi/4, np.pi/4)
+        prior_y = theta_y + np.random.uniform(-np.pi/4, np.pi/4)
+        prior_z = theta_z + np.random.uniform(-np.pi/4, np.pi/4)
+        R_prior_x = RotX(prior_x)
+        R_prior_y = RotY(prior_y)
+        R_prior_z = RotZ(prior_z)
+        R_prior = R_prior_x @ R_prior_y @ R_prior_z
+
+        # noise_theta_x = theta_x + np.random.uniform(-np.pi / 4, np.pi / 4)
+        # noise_theta_y = theta_y + np.random.uniform(-np.pi / 4, np.pi / 4)
+        # noise_theta_z = theta_x + np.random.uniform(-np.pi / 4, np.pi / 4)
+        # Rx = RotX(noise_theta_x)
+        # Ry = RotY(noise_theta_y)
+        # Rz = RotZ(noise_theta_z)
+        # R_noise = Rx @ Ry @ Rz
+
+
         # rotate source point cloud
         target_points = R @ src_points + t
 
         src_points = torch.from_numpy(src_points)
         target_points = torch.from_numpy(target_points)
         R = torch.from_numpy(R)
+        R_prior = torch.from_numpy(R_prior)
 
         # return source point cloud and transformed (target) point cloud 
         # src, target: B x 3 x N, reflectance : B x 1 x N 
 
         # return (src_points, target_points, R, t, src_reflectance)
         #
-        return (src_points, target_points, R, t)
+        return (src_points, target_points, R, t, R_prior)
 
 
 if __name__ == "__main__":
